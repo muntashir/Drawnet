@@ -158,7 +158,7 @@ function clearCanvas() {
     }
     canvasData.size = parseInt(0);
     oldDataSize = parseInt(0);
-    canvasDraw(canvas, ctx, canvasData, userPositionsObject, true);
+    canvasDraw(canvas, ctx, canvasData, true);
 }
 
 function drawLoop() {
