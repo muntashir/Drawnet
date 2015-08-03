@@ -112,11 +112,6 @@ $(document).ready(function () {
         socket.close();
     });
 
-    $('#chat-input').on('click keydown', function () {
-        unreadCount = 0;
-        updateWindowTitle();
-    });
-
     $('#clear').on('click touchend', function () {
         clearCanvas();
     });
@@ -127,11 +122,15 @@ $(document).ready(function () {
             value: "",
             callback: function (label) {
                 var labelArray = [];
-                for (var i = 0; i < 36; i++) {
-                    labelArray[i] = 0;
+                if (stringToIndex.hasOwnProperty(label)) {
+                    for (var i = 0; i < 36; i++) {
+                        labelArray[i] = 0;
+                    }
+                    labelArray[stringToIndex[label]] = 1;
+                } else {
+                    bootbox.alert("Invalid input");
+                    return;
                 }
-                labelArray[stringToIndex[label]] = 1;
-                console.log(labelArray);
                 socket.emit('train', canvasToArray(canvas, ctx), labelArray);
             }
         });
@@ -142,7 +141,6 @@ $(document).ready(function () {
     });
 
     socket.on('send-prediction', function (p) {
-        console.log(p);
         var i = p.indexOf(Math.max.apply(Math, p));
         bootbox.alert(indexToString[i]);
     });
