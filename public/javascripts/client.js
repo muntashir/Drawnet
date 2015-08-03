@@ -13,7 +13,7 @@ var canvasData = {};
 var dataBuffer = [];
 var bufferLength = 3;
 
-var dim = 90;
+var dim = 80;
 
 //var sessionID, roomID passed in from Jade
 
@@ -97,7 +97,7 @@ var stringToIndex = {
 function canvasToArray(canvas, ctx) {
     var array = [];
     var data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
-    for (var i = 0; i < data.length; i += 4) {
+    for (var i = 0; i < data.length; i += 8) {
         array.push(data[i] / 255);
     }
     return array;

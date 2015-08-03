@@ -23,7 +23,7 @@ var io = require('socket.io')(server);
 //});
 
 var synaptic = require('synaptic');
-net = new synaptic.Architect.Perceptron(90 * 90, 15, 36);
+net = new synaptic.Architect.Perceptron((80 * 80)/2, 10, 36);
 
 //Init socket
 io.on('connection', function (socket) {
