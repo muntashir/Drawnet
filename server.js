@@ -1,16 +1,16 @@
 var app = require('./app');
 var redis = require('redis');
-var db;
-
-if (process.env.REDISCLOUD_URL) {
-    var redisURL = require('url').parse(process.env.REDISCLOUD_URL);
-    db = redis.createClient(redisURL.port, redisURL.hostname, {
-        no_ready_check: true
-    });
-    db.auth(redisURL.auth.split(":")[1]);
-} else {
-    db = redis.createClient();
-}
+//var db;
+//
+//if (process.env.REDISCLOUD_URL) {
+//    var redisURL = require('url').parse(process.env.REDISCLOUD_URL);
+//    db = redis.createClient(redisURL.port, redisURL.hostname, {
+//        no_ready_check: true
+//    });
+//    db.auth(redisURL.auth.split(":")[1]);
+//} else {
+//    db = redis.createClient();
+//}
 
 //Init HTTP server
 var port = process.env.PORT || 80;
@@ -18,9 +18,9 @@ var http = require('http');
 var server = http.createServer(app);
 var io = require('socket.io')(server);
 
-db.on('connect', function () {
-    console.log('Connected to Redis');
-});
+//db.on('connect', function () {
+//    console.log('Connected to Redis');
+//});
 
 var synaptic = require('synaptic');
 net = new synaptic.Architect.Perceptron(90 * 90, 15, 36);
