@@ -97,7 +97,7 @@ var stringToIndex = {
 function canvasToArray(canvas, ctx) {
     var array = [];
     var data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
-    for (var i = 0; i < data.length; i += 8) {
+    for (var i = 0; i < data.length; i += 4) {
         array.push(data[i] / 255);
     }
     return array;
@@ -195,7 +195,7 @@ function initCanvas() {
             point.x = mousePos.x;
             point.y = mousePos.y;
             point.color = '#000';
-            point.thickness = 2;
+            point.thickness = 1;
             dataBuffer.push(point);
             flushBuffer();
         }
