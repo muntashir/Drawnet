@@ -1,0 +1,22 @@
+{
+  "name": "drawstuff",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "start": "node ./server.js"
+  },
+  "dependencies": {
+    "body-parser": "^1.13.1",
+    "compression": "^1.5.1",
+    "express": "^5.0.0-alpha.1",
+    "express-minify": "^0.1.6",
+    "express-session": "^1.11.3",
+    "jade": "^1.11.0",
+    "morgan": "^1.6.0",
+    "redis": "^0.12.1",
+    "serve-favicon": "*",
+    "socket.io": "automattic/socket.io",
+    "stylus": "^0.51.1",
+    "synaptic": "^1.0.1"
+  }
+}

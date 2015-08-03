@@ -1,0 +1,23 @@
+extends layout
+
+block styles
+    link(rel='stylesheet', href='/stylesheets/room.css')
+
+block scripts
+    script.
+        sessionID="#{sessionID}";
+        roomID="#{roomID}";
+    script(src='/javascripts/client.js')
+    script(src='/javascripts/canvas.js')
+
+block content
+    nav#nav.navbar.navbar-inverse.navbar-fixed-top
+        .container-fluid
+            .navbar-header
+                a.navbar-brand(href="/") #{title}
+    canvas#canvas
+    #draw
+        #tools.well
+            button.btn.btn-success(id='clear') Clear
+            button.btn.btn-default(id='train') Train
+            button.btn.btn-default(id='guess') Guess
