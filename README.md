@@ -1,3 +1,3 @@
-# Drawstuff
+# Drawnet
 
-https://draw-stuff.herokuapp.com/
+http://drawnet.herokuapp.com/
