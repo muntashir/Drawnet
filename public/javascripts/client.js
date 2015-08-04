@@ -95,7 +95,7 @@ $(document).ready(function () {
 
     $('#train').on('click touchend', function () {
         bootbox.prompt({
-            title: "Enter a label (Capitals and numbers only)",
+            title: "Enter a label (numbers only for now)",
             value: "",
             callback: function (label) {
                 var labelArray = [];
