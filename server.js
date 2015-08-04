@@ -1,16 +1,18 @@
 var app = require('./app');
 var redis = require('redis');
-//var db;
-//
-//if (process.env.REDISCLOUD_URL) {
-//    var redisURL = require('url').parse(process.env.REDISCLOUD_URL);
-//    db = redis.createClient(redisURL.port, redisURL.hostname, {
-//        no_ready_check: true
-//    });
-//    db.auth(redisURL.auth.split(":")[1]);
-//} else {
-//    db = redis.createClient();
-//}
+var synaptic = require('synaptic');
+var db;
+var net;
+
+if (process.env.REDISCLOUD_URL) {
+    var redisURL = require('url').parse(process.env.REDISCLOUD_URL);
+    db = redis.createClient(redisURL.port, redisURL.hostname, {
+        no_ready_check: true
+    });
+    db.auth(redisURL.auth.split(":")[1]);
+} else {
+    db = redis.createClient();
+}
 
 //Init HTTP server
 var port = process.env.PORT || 80;
@@ -22,12 +24,15 @@ var dim = 100;
 var stride = 5;
 var learningRate = 0.3;
 
-//db.on('connect', function () {
-//    console.log('Connected to Redis');
-//});
-
-var synaptic = require('synaptic');
-net = new synaptic.Architect.Perceptron((dim * dim) / stride, 25, 10);
+db.on('connect', function () {
+    db.get('net', function (err, data) {
+        if (err || data === null) {
+            net = new synaptic.Architect.Perceptron((dim * dim) / stride, 25, 10);
+        } else {
+            net = new synaptic.Network.fromJSON(JSON.parse(data));
+        }
+    });
+});
 
 var indexToString = {
     0: "0",
@@ -81,6 +86,7 @@ io.on('connection', function (socket) {
     socket.on('train', function (data, label) {
         net.activate(data);
         net.propagate(learningRate, label);
+        db.set('net', JSON.stringify(net.toJSON()));
         socket.emit('done-train');
     });
 });
