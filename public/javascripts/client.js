@@ -13,48 +13,9 @@ var canvasData = {};
 var dataBuffer = [];
 var bufferLength = 3;
 
-var dim = 80;
+var dim = 0;
+var stride = 0;
 
-//var sessionID, roomID passed in from Jade
-
-var indexToString = {
-    0: "0",
-    1: "1",
-    2: "2",
-    3: "3",
-    4: "4",
-    5: "5",
-    6: "6",
-    7: "7",
-    8: "8",
-    9: "9",
-    10: "Z",
-    11: "A",
-    12: "B",
-    13: "C",
-    14: "D",
-    15: "E",
-    16: "F",
-    17: "G",
-    18: "H",
-    19: "I",
-    20: "J",
-    21: "K",
-    22: "L",
-    23: "M",
-    24: "N",
-    25: "O",
-    26: "P",
-    27: "Q",
-    28: "R",
-    29: "S",
-    30: "T",
-    31: "U",
-    32: "V",
-    33: "W",
-    34: "X",
-    35: "Y"
-};
 var stringToIndex = {
     "0": 0,
     "1": 1,
@@ -97,16 +58,32 @@ var stringToIndex = {
 function canvasToArray(canvas, ctx) {
     var array = [];
     var data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
-    for (var i = 0; i < data.length; i += 4*2) {
-        array.push(data[i] / 255);
+    for (var i = 0; i < data.length; i += 4 * stride) {
+        array.push(255 - data[i]);
     }
     return array;
 }
 
+function processing() {
+    $('#train').prop('disabled', true);
+    $('#guess').prop('disabled', true);
+}
+
+function doneProcessing() {
+    $('#train').prop('disabled', false);
+    $('#guess').prop('disabled', false);
+}
+
 $(document).ready(function () {
     socket = io();
-    initCanvas();
-    initPreCanvas(canvas);
+
+    socket.on('init', function (d, s) {
+        dim = d;
+        stride = s;
+        initCanvas();
+        initPreCanvas(canvas);
+        window.requestAnimationFrame(drawLoop);
+    });
 
     $(window).on('beforeunload', function () {
         socket.close();
@@ -132,20 +109,24 @@ $(document).ready(function () {
                     return;
                 }
                 socket.emit('train', canvasToArray(canvas, ctx), labelArray);
+                processing();
             }
         });
     });
 
     $('#guess').on('click touchend', function () {
         socket.emit('request-prediction', canvasToArray(canvas, ctx));
+        processing();
     });
 
-    socket.on('send-prediction', function (p) {
-        var i = p.indexOf(Math.max.apply(Math, p));
-        bootbox.alert(indexToString[i]);
+    socket.on('send-prediction', function (pred, confidence) {
+        bootbox.alert("Guess: " + pred.toString() + " Confidence: " + confidence + "%");
+        doneProcessing();
     });
 
-    window.requestAnimationFrame(drawLoop);
+    socket.on('done-train', function (pred, confidence) {
+        doneProcessing();
+    });
 });
 
 function clearCanvas() {
@@ -195,7 +176,7 @@ function initCanvas() {
             point.x = mousePos.x;
             point.y = mousePos.y;
             point.color = '#000';
-            point.thickness = 2;
+            point.thickness = dim / 5;
             dataBuffer.push(point);
             flushBuffer();
         }

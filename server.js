@@ -18,24 +18,70 @@ var http = require('http');
 var server = http.createServer(app);
 var io = require('socket.io')(server);
 
+var dim = 100;
+var stride = 5;
+var learningRate = 0.3;
+
 //db.on('connect', function () {
 //    console.log('Connected to Redis');
 //});
 
 var synaptic = require('synaptic');
-net = new synaptic.Architect.Perceptron((80 * 80)/2, 15, 36);
+net = new synaptic.Architect.Perceptron((dim * dim) / stride, 25, 10);
+
+var indexToString = {
+    0: "0",
+    1: "1",
+    2: "2",
+    3: "3",
+    4: "4",
+    5: "5",
+    6: "6",
+    7: "7",
+    8: "8",
+    9: "9",
+    10: "Z",
+    11: "A",
+    12: "B",
+    13: "C",
+    14: "D",
+    15: "E",
+    16: "F",
+    17: "G",
+    18: "H",
+    19: "I",
+    20: "J",
+    21: "K",
+    22: "L",
+    23: "M",
+    24: "N",
+    25: "O",
+    26: "P",
+    27: "Q",
+    28: "R",
+    29: "S",
+    30: "T",
+    31: "U",
+    32: "V",
+    33: "W",
+    34: "X",
+    35: "Y"
+};
 
 //Init socket
 io.on('connection', function (socket) {
+    socket.emit('init', dim, stride);
+
     socket.on('request-prediction', function (data) {
-        socket.emit('send-prediction', net.activate(data));
+        var p = net.activate(data);
+        var i = p.indexOf(Math.max.apply(Math, p));
+        socket.emit('send-prediction', indexToString[i], p[i] * 100);
     });
 
     socket.on('train', function (data, label) {
-        if (data) {
-            net.activate(data);
-            net.propagate(1, label);
-        }
+        net.activate(data);
+        net.propagate(learningRate, label);
+        socket.emit('done-train');
     });
 });
 
