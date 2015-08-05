@@ -20,14 +20,15 @@ var http = require('http');
 var server = http.createServer(app);
 var io = require('socket.io')(server);
 
-var dim = 100;
-var stride = 5;
-var learningRate = 0.3;
+var dim = 200;
+var netDim = 20;
+var hiddenLayer = 25;
+var learningRate = 0.1;
 
 db.on('connect', function () {
     db.get('net', function (err, data) {
         if (err || data === null) {
-            net = new synaptic.Architect.Perceptron((dim * dim) / stride, 25, 10);
+            net = new synaptic.Architect.Perceptron((netDim * netDim), hiddenLayer, 10);
         } else {
             net = new synaptic.Network.fromJSON(JSON.parse(data));
         }
@@ -44,38 +45,12 @@ var indexToString = {
     6: "6",
     7: "7",
     8: "8",
-    9: "9",
-    10: "Z",
-    11: "A",
-    12: "B",
-    13: "C",
-    14: "D",
-    15: "E",
-    16: "F",
-    17: "G",
-    18: "H",
-    19: "I",
-    20: "J",
-    21: "K",
-    22: "L",
-    23: "M",
-    24: "N",
-    25: "O",
-    26: "P",
-    27: "Q",
-    28: "R",
-    29: "S",
-    30: "T",
-    31: "U",
-    32: "V",
-    33: "W",
-    34: "X",
-    35: "Y"
+    9: "9"
 };
 
 //Init socket
 io.on('connection', function (socket) {
-    socket.emit('init', dim, stride);
+    socket.emit('init', dim, netDim);
 
     socket.on('request-prediction', function (data) {
         var p = net.activate(data);

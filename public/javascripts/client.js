@@ -13,8 +13,10 @@ var canvasData = {};
 var dataBuffer = [];
 var bufferLength = 3;
 
-var dim = 0;
-var stride = 0;
+var dim;
+var netDim;
+var netCanvas;
+var netCtx;
 
 var stringToIndex = {
     "0": 0,
@@ -26,42 +28,27 @@ var stringToIndex = {
     "6": 6,
     "7": 7,
     "8": 8,
-    "9": 9,
-    "Z": 10,
-    "A": 11,
-    "B": 12,
-    "C": 13,
-    "D": 14,
-    "E": 15,
-    "F": 16,
-    "G": 17,
-    "H": 18,
-    "I": 19,
-    "J": 20,
-    "K": 21,
-    "L": 22,
-    "M": 23,
-    "N": 24,
-    "O": 25,
-    "P": 26,
-    "Q": 27,
-    "R": 28,
-    "S": 29,
-    "T": 30,
-    "U": 31,
-    "V": 32,
-    "W": 33,
-    "X": 34,
-    "Y": 35
+    "9": 9
 };
 
-function canvasToArray(canvas, ctx) {
+function getNetInputs() {
+    canvasDraw(netCanvas, netCtx, canvasData, true);
     var array = [];
-    var data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
-    for (var i = 0; i < data.length; i += 4 * stride) {
-        array.push(255 - data[i]);
+    var data = netCtx.getImageData(0, 0, netDim, netDim).data;
+    for (var i = 0; i < data.length; i += 4) {
+        var avg = (data[i] + data[i + 1] + data[i + 2]) / 3;
+        array.push(2 * (avg / 255) - 1);
     }
     return array;
+}
+
+function initNetCanvas(canvas) {
+    netCanvas = document.createElement('canvas');
+    var scale = netDim / dim;
+    netCanvas.width = canvas.width;
+    netCanvas.height = canvas.height;
+    netCtx = netCanvas.getContext('2d');
+    netCtx.scale(scale, scale);
 }
 
 function processing() {
@@ -79,9 +66,10 @@ $(document).ready(function () {
 
     socket.on('init', function (d, s) {
         dim = d;
-        stride = s;
+        netDim = s;
         initCanvas();
         initPreCanvas(canvas);
+        initNetCanvas(canvas);
         window.requestAnimationFrame(drawLoop);
     });
 
@@ -94,34 +82,51 @@ $(document).ready(function () {
     });
 
     $('#train').on('click touchend', function () {
-        bootbox.prompt({
-            title: "Enter a label (numbers only for now)",
-            value: "",
-            callback: function (label) {
-                var labelArray = [];
-                if (stringToIndex.hasOwnProperty(label)) {
-                    for (var i = 0; i < 36; i++) {
-                        labelArray[i] = 0;
-                    }
-                    labelArray[stringToIndex[label]] = 1;
-                } else {
-                    bootbox.alert("Invalid input");
-                    return;
-                }
-                socket.emit('train', canvasToArray(canvas, ctx), labelArray);
-                processing();
-            }
-        });
+
     });
 
     $('#guess').on('click touchend', function () {
-        socket.emit('request-prediction', canvasToArray(canvas, ctx));
+        socket.emit('request-prediction', getNetInputs());
         processing();
     });
 
     socket.on('send-prediction', function (pred, confidence) {
-        bootbox.alert("Guess: " + pred.toString() + " Confidence: " + confidence + "%");
         doneProcessing();
+        bootbox.dialog({
+            title: "Guess: " + pred.toString() + " Confidence: " + confidence.toFixed(2) + "%",
+            message: "Is this correct?",
+            buttons: {
+                no: {
+                    label: "No",
+                    className: "btn-danger",
+                    callback: function () {
+                        bootbox.prompt({
+                            title: "What was the answer? (numbers only)",
+                            value: "",
+                            callback: function (label) {
+                                var labelArray = [];
+                                if (stringToIndex.hasOwnProperty(label)) {
+                                    for (var i = 0; i < 10; i++) {
+                                        labelArray[i] = 0;
+                                    }
+                                    labelArray[stringToIndex[label]] = 1;
+                                } else {
+                                    bootbox.alert("Invalid input");
+                                    return;
+                                }
+                                socket.emit('train', getNetInputs(), labelArray);
+                                processing();
+                            }
+                        });
+                    }
+                },
+                yes: {
+                    label: "Yes",
+                    className: "btn-success",
+                    callback: function () {}
+                }
+            }
+        });
     });
 
     socket.on('done-train', function (pred, confidence) {
