@@ -181,7 +181,7 @@ function initCanvas() {
             point.x = mousePos.x;
             point.y = mousePos.y;
             point.color = '#000';
-            point.thickness = dim / 5;
+            point.thickness = dim / 4;
             dataBuffer.push(point);
             flushBuffer();
         }
