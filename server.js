@@ -22,7 +22,7 @@ var io = require('socket.io')(server);
 
 var dim = 200;
 var netDim = 20;
-var hiddenLayer = 25;
+var hiddenLayer = 35;
 var learningRate = 0.1;
 
 db.on('connect', function () {
